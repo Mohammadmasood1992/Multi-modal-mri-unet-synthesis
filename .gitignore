@@ -1,0 +1,36 @@
+# Data and restricted-access datasets -- never commit these
+data/
+*.npy
+*.nii
+*.nii.gz
+
+# Training outputs: models, checkpoints, logs, generated reports
+experiments/
+checkpoints/
+outputs/
+logs/
+*.pth
+*.pt
+*.ckpt
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Secrets / environment
+.env

@@ -1,0 +1,216 @@
+# =============================================================================
+# Experiment configuration
+#
+# Everything about the data, the U-Net architecture, and the training run is
+# controlled from this one file -- no hyperparameters are hard-coded in the
+# notebook or in src/.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Data
+# ---------------------------------------------------------------------------
+input_modality:
+  - FA          # Fractional Anisotropy map (diffusion MRI)
+
+output_modality:
+  - RNI         # Restricted Normalized Isotropic diffusion signal fraction
+
+# Directory containing one <modality>.npy volume stack and one
+# <modality>_index.csv per modality, plus the participant metadata CSV below.
+# Not included in this repository -- see README for the expected layout.
+data_directory: ./data/
+
+data_frame: participants_metadata.csv
+Drop_missing_modalities_flag: true
+
+# Number of participants (grouped by family, see fold_strategy) held out as
+# a fully external test set, evaluated only once by the aggregation phase.
+samples_reserved_to_external_test: 2000
+
+# Restrict to specific imaging visits / scanner manufacturers, if desired.
+time_point_flag: true
+time_point:
+  - ses-00A
+  - ses-02A
+  - ses-04A
+  - ses-06A
+
+manufacture_flag: false
+manufacture:
+  - scanner_manufacturer
+manufacture_filter:
+  - SIEMENS
+
+# ---------------------------------------------------------------------------
+# Image normalization
+# ---------------------------------------------------------------------------
+normalizer_flag: true
+image_normalizer_lower_quantile: 0.01
+image_normalizer_upper_quantile: 0.99
+image_normalizer_normalization_method: z-score   # z-score, min-max, robust, or none
+
+# ---------------------------------------------------------------------------
+# U-Net architecture
+# ---------------------------------------------------------------------------
+model_info:
+  unet:
+    in_channels: 1
+    out_channels: 1
+    dimensions: 3      # 2 for 2D U-Net, 3 for 3D U-Net
+    input_shape:
+      - 1       # batch
+      - 1       # channels
+      - 67      # depth
+      - 67      # height
+      - 83      # width
+
+  encoder_layers:
+    - filters: 64
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.0
+      pool_type: max
+      pool_size: 2
+      pool_stride: 2
+      num_convs: 2
+
+    - filters: 128
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.0
+      pool_type: max
+      pool_size: 2
+      pool_stride: 2
+      num_convs: 2
+
+    - filters: 256
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.1
+      pool_type: max
+      pool_size: 2
+      pool_stride: 2
+      num_convs: 2
+
+    - filters: 512
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.1
+      pool_type: max
+      pool_size: 2
+      pool_stride: 2
+      num_convs: 2
+
+  bottleneck:
+    filters: 1024
+    kernel_size: 3
+    stride: 1
+    padding: 1
+    activation: relu
+    batch_norm: true
+    dropout: 0.2
+    num_convs: 2
+
+  decoder_layers:
+    - filters: 512
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.1
+      upsample_type: transpose      # transpose (ConvTranspose) or interpolate
+      upsample_scale: 2
+      num_convs: 2
+      skip_connection: true
+
+    - filters: 256
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.1
+      upsample_type: transpose
+      upsample_scale: 2
+      num_convs: 2
+      skip_connection: true
+
+    - filters: 128
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.0
+      upsample_type: transpose
+      upsample_scale: 2
+      num_convs: 2
+      skip_connection: true
+
+    - filters: 64
+      kernel_size: 3
+      stride: 1
+      padding: 1
+      activation: relu
+      batch_norm: true
+      dropout: 0.0
+      upsample_type: transpose
+      upsample_scale: 2
+      num_convs: 2
+      skip_connection: true
+
+  output_layer:
+    kernel_size: 1
+    stride: 1
+    padding: 0
+    activation: sigmoid     # sigmoid, softmax, tanh, or none
+
+# ---------------------------------------------------------------------------
+# Training
+# ---------------------------------------------------------------------------
+n_folds: 5
+fold_strategy: family        # 'family' or 'site' -- grouping used so no
+                              # family/site appears in more than one split
+train_ratio: 0.8
+val_ratio: 0.1
+test_ratio: 0.1
+batch_size: 8
+n_epochs: 150
+learning_rate: 0.001
+weight_decay: 0.0001
+optimizer_type: adamw        # adam, adamw, sgd
+loss_function: combined      # l1, mse, ssim, perceptual, combined
+loss_weights:
+  l1: 1.0
+  ssim: 0.5
+scheduler_type: plateau      # step, cosine, plateau, exponential, cyclic, onecycle
+scheduler_params:
+  factor: 0.1
+  patience: 10
+clip_grad: 1.0
+early_stopping_patience: 20
+
+augmentation_config:
+  rotation_range: 15
+  scale_range:
+    - 0.9
+    - 1.1
+  intensity_shift_range: 0.1
+  prob: 0.5
+
+# 2D slice extraction (only used if model is 2D)
+slice_axis: axial            # axial, sagittal, coronal, all
+skip_background_slices: 2
