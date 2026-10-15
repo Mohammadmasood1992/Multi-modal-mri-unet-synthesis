@@ -20,7 +20,7 @@ The specific task in the included config is:
 
 ```
 input:  FA   (Fractional Anisotropy)
-output: RNI  (Restricted Normalized Isotropic diffusion signal fraction)
+output: RNI, HNI  (Restricted and Hindered Normalized Isotropic diffusion signal fraction)
 ```
 
 but the pipeline is not specific to these two maps -- any pair of
