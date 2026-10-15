@@ -14,6 +14,7 @@ input_modality:
 
 output_modality:
   - RNI         # Restricted Normalized Isotropic diffusion signal fraction
+  - HNI         # Hindered Normalized Isotropic diffusion signal fraction
 
 # Directory containing one <modality>.npy volume stack and one
 # <modality>_index.csv per modality, plus the participant metadata CSV below.
