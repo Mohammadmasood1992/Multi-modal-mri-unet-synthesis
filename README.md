@@ -183,32 +183,7 @@ This submits the three-phase dependency chain described above. Edit the
 account, email) to match your cluster, and set `data_directory` in
 `config/config.yaml` to your data.
 
-## Notes on Correctness and Reproducibility
 
-A few issues were found and fixed while preparing this repository for
-release:
-
-- **Fold-strategy selection bug**: the original notebook computed the
-  cross-validation grouping column conditionally on `fold_strategy`
-  (`'family'` vs. `'site'`), but a later cell unconditionally overwrote
-  that choice with the family-ID column, so switching `fold_strategy` to
-  `'site'` in the config silently had no effect. This did not change any
-  results produced with the default `fold_strategy: family`, but would
-  have silently invalidated a site-grouped run. Fixed in the notebook
-  (Section 7) so the grouping column always matches `fold_strategy`.
-- **Undefined command in the training SLURM script**: the original fold
-  job called a `my_job_header` shell function that is not defined
-  anywhere in the project (an artifact of the original cluster's shared
-  environment). Removed, since it would fail on any other cluster.
-- **Unused imports**: the notebook imported several packages
-  (`tqdm`, `seaborn`, `category_encoders.BinaryEncoder`, `sklearn`'s plain
-  `KFold`, and a few `typing` names) that are never used; removed for
-  clarity.
-
-All other logic -- model architecture, loss functions, data splitting,
-training loop, and metrics -- is unchanged from the original
-implementation; only code organization, naming, and the issues above were
-touched.
 
 ## License
 
