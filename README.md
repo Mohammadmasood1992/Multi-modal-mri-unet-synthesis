@@ -87,7 +87,7 @@ instead of sequentially on one:
 | Phase | Script | What it does | Resources |
 |---|---|---|---|
 | 1 | `slurm/01_preprocess.sh` | Split data, save fold indices to disk | CPU only, runs once |
-| 2 | `slurm/02_train_fold.sh` | Train one cross-validation fold | 1 GPU x 5 parallel tasks (SLURM job array) |
+| 2 | `slurm/02_train_fold.sh` | Train one cross-validation fold | 5 GPU x 5 parallel tasks (SLURM job array) |
 | 3 | `slurm/03_aggregate.sh` | Load all 5 fold models, evaluate external test set as an ensemble | 1 GPU, runs once |
 
 ```
